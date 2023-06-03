@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct SignUpView: View {
     @State private var email: String = ""
     @State private var password: String = ""
-    
+    @AppStorage("uid") var userID: String = ""
+    @Binding var currentShowingView: String
     
     private func isValidPassword(_ password: String) -> Bool {
         // minimum 6 characters long
@@ -83,7 +85,11 @@ struct SignUpView: View {
                 )
                 .padding()
                 
-                Button(action: {}) {
+                Button(action: {
+                    withAnimation {
+                        self.currentShowingView = "login"
+                    }
+                }) {
                     Text("Already have an account?")
                         .foregroundColor(.gray)
                 }
@@ -91,6 +97,20 @@ struct SignUpView: View {
                 Spacer()
                 
                 Button {
+                    
+                    
+                    
+                    Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+                        if let error =  error {
+                            print(error)
+                            return
+                        }
+                        
+                        if let authResult = authResult {
+                            print(authResult.user.uid)
+                            userID = authResult.user.uid
+                        }
+                    }
                     
                 } label: {
                     Text("Create New Account")
@@ -109,12 +129,5 @@ struct SignUpView: View {
                 }
             }
         }
-    }
-}
-
-struct SignUpView_Previews: PreviewProvider {
-    static var previews: some View {
-        SignUpView()
-            .preferredColorScheme(.dark)
     }
 }
